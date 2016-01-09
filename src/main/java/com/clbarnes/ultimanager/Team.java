@@ -12,10 +12,6 @@ import java.util.ArrayList;
 public class Team {
     private String teamName;
     private static final String TEAM_NAME_COL = "teamName";
-    private int wins;
-    private static final String WINS_COL = "wins";
-    private int losses;
-    private static final String LOSSES_COL = "losses";
     private ArrayList<Player> players;
 
     public ArrayList<Player> getPlayers() {
@@ -34,8 +30,6 @@ public class Team {
     public Team(CSVRecord record)
     {
         setTeamName(record.get("teamName"));
-        setWins(Integer.parseInt(record.get("wins")));
-        setLosses(Integer.parseInt(record.get("losses")));
         setPlayers(getPlayersFromDb());
     }
 
@@ -43,8 +37,6 @@ public class Team {
     {
         try {
             setTeamName(rs.getString(TEAM_NAME_COL));
-            setWins(rs.getInt(WINS_COL));
-            setLosses(rs.getInt(LOSSES_COL));
             setPlayers(getPlayersFromDb());
         } catch (SQLException e) {
             e.printStackTrace();
@@ -62,26 +54,5 @@ public class Team {
 
     public void setTeamName(String teamName) {
         this.teamName = teamName;
-    }
-
-    public int getWins() {
-        return wins;
-    }
-
-    public void setWins(int wins) {
-        this.wins = wins;
-    }
-
-    public int getLosses() {
-        return losses;
-    }
-
-    public void setLosses(int losses) {
-        this.losses = losses;
-    }
-
-    public int getGamesPlayed()
-    {
-        return this.wins + this.losses;
     }
 }

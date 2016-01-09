@@ -35,9 +35,7 @@ public class TeamDb {
             stmt = c.createStatement();
             String sql = String.format("CREATE TABLE IF NOT EXISTS %s ", TABLE_NAME) +
                     "(" +
-                    "teamName TEXT PRIMARY KEY NOT NULL," +
-                    "wins INT," +
-                    "losses TEXT" +
+                    "teamName TEXT PRIMARY KEY NOT NULL" +
                     ")";
             stmt.executeUpdate(sql);
         } catch (SQLException e) {
@@ -67,13 +65,8 @@ public class TeamDb {
         try {
             c.setAutoCommit(false);
             stmt = c.createStatement();
-            String sql = String.format("INSERT INTO %s (teamName, wins, losses) ", TABLE_NAME) +
-                    String.format(
-                            "VALUES ('%s', %d, %d)",
-                            team.getTeamName(),
-                            team.getWins(),
-                            team.getLosses()
-                    );
+            String sql = String.format("INSERT INTO %s (teamName) ", TABLE_NAME) +
+                    String.format("VALUES ('%s')", team.getTeamName());
             stmt.executeUpdate(sql);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -117,6 +110,26 @@ public class TeamDb {
 
     public ArrayList<Team> getAll()
     {
-        throw new NotImplementedException();
+        Statement stmt;
+        ArrayList<Team> teams = new ArrayList<>();
+
+        try {
+            stmt = c.createStatement();
+            String query = String.format("SELECT * FROM %s ", TABLE_NAME);
+            ResultSet rs = stmt.executeQuery(query);
+            try
+            {
+                while (rs.next())
+                {
+                    teams.add(new Team(rs));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return teams;
     }
 }
