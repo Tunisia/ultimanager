@@ -1,8 +1,17 @@
 package com.clbarnes.ultimanager;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 
 /**
@@ -16,6 +25,59 @@ public class TeamDb {
     private TeamDb()
     {
         c = DatabaseConnection.getInstance().getConnection();
+        ensureTableExists();
+    }
+
+    private void ensureTableExists()
+    {
+        Statement stmt;
+        try {
+            stmt = c.createStatement();
+            String sql = String.format("CREATE TABLE IF NOT EXISTS %s ", TABLE_NAME) +
+                    "(" +
+                    "teamName TEXT PRIMARY KEY NOT NULL," +
+                    "wins INT," +
+                    "losses TEXT" +
+                    ")";
+            stmt.executeUpdate(sql);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void addFromCsv(String csvPath)
+    {
+        File csvFile = new File(csvPath);
+
+        try (CSVParser parser = CSVParser.parse(csvFile, StandardCharsets.UTF_8, CSVFormat.EXCEL.withHeader()))
+        {
+            for (CSVRecord row : parser.getRecords())
+            {
+                addTeam(new Team(row));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void addTeam(Team team)
+    {
+        Statement stmt;
+
+        try {
+            c.setAutoCommit(false);
+            stmt = c.createStatement();
+            String sql = String.format("INSERT INTO %s (teamName, wins, losses) ", TABLE_NAME) +
+                    String.format(
+                            "VALUES ('%s', %d, %d)",
+                            team.getTeamName(),
+                            team.getWins(),
+                            team.getLosses()
+                    );
+            stmt.executeUpdate(sql);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public static TeamDb getInstance()
@@ -30,7 +92,27 @@ public class TeamDb {
 
     public Team getByTeamName(String teamName)
     {
-        throw new NotImplementedException();
+        Statement stmt;
+        Team team = null;
+
+        try {
+            stmt = c.createStatement();
+            String query = String.format("SELECT * FROM %s ", TABLE_NAME) +
+                    String.format("WHERE teamName = '%s' ", teamName) +
+                    "LIMIT 1";
+            ResultSet rs = stmt.executeQuery(query);
+            try
+            {
+                rs.next();
+                team = new Team(rs);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return team;
     }
 
     public ArrayList<Team> getAll()

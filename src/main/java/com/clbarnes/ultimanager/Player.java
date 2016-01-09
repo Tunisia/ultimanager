@@ -2,6 +2,9 @@ package com.clbarnes.ultimanager;
 
 import org.apache.commons.csv.CSVRecord;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 /**
  * Created by cbarnes on 1/8/16.
  */
@@ -24,6 +27,19 @@ public class Player {
         setTeam(record.get("team"));
         setHeight(Integer.parseInt(record.get("height")));
         setAbility(Float.parseFloat(record.get("ability")));
+    }
+
+    public Player(ResultSet rs)
+    {
+        try {
+            setPlayerName(rs.getString("playerName"));
+            setAge(rs.getInt("age"));
+            setTeam(rs.getString("team"));
+            setHeight(rs.getInt("height"));
+            setAbility(rs.getFloat("ability"));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public String getPlayerName() {

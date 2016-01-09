@@ -11,6 +11,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.File;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -60,12 +61,54 @@ public class PlayerDb {
 
     public ArrayList<Player> getByCurrentTeam(String teamName)
     {
-        throw new NotImplementedException();
+        Statement stmt;
+        ArrayList<Player> players = new ArrayList<>();
+
+        try {
+            stmt = c.createStatement();
+            String query = String.format("SELECT * FROM %s ", TABLE_NAME) +
+                    String.format("WHERE team = '%s' ", teamName);
+            ResultSet rs = stmt.executeQuery(query);
+            try
+            {
+                while (rs.next())
+                {
+                    players.add(new Player(rs));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return players;
     }
+
 
     public Player getByName(String playerName)
     {
-        throw new NotImplementedException();
+        Statement stmt;
+        Player player = null;
+
+        try {
+            stmt = c.createStatement();
+            String query = String.format("SELECT * FROM %s ", TABLE_NAME) +
+                    String.format("WHERE playerName = %s ", playerName) +
+                    "LIMIT 1";
+            ResultSet rs = stmt.executeQuery(query);
+            try
+            {
+                rs.next();
+                player = new Player(rs);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return player;
     }
 
     public void addFromCsv(String csvPath)
